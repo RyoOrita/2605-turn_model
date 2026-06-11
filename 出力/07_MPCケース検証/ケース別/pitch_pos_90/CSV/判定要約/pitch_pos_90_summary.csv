@@ -1,0 +1,2 @@
+name,target_angle_deg,sim_time,roll_offset_deg,roll_amp_deg,roll_rate_rad_s,pitch_offset_deg,pitch_amp_deg,pitch_rate_rad_s,notes,steps,timed_out,strict_stop_achieved,strict_stop_time_s,practical_stop_achieved,practical_stop_time_s,final_angle_error_deg,final_omega_rad_s,final_u_cmd,max_overshoot_deg,overall_pass,case_output_dir,saved_file_count
+pitch_pos_90,90.0,40.0,0.0,0.0,0.1,4.0,0.0,0.07,正ピッチ定常,150,False,True,14.9,True,14.4,0.2956,0.001237,0.02,0.0,True,出力/07_MPCケース検証/ケース別/pitch_pos_90,8

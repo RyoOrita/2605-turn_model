@@ -4,10 +4,10 @@ __pycache__/
 *.py[cod]
 
 # Raw logs and archives
-*.mcap
+# *.mcap
 *.zip
 
 # Generated analysis and simulation outputs
-outputs/
-出力/
-pid_mpc_porting_reference/output/
+# outputs/
+# 出力/
+# pid_mpc_porting_reference/output/

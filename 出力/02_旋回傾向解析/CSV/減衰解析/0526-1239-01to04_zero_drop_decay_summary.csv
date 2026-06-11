@@ -1,0 +1,2 @@
+event_id,lever_before_drop,drop_timestamp_ns,pre_duration_sec,post_duration_sec,steady_state_abs_yaw,first_post_abs_yaw,last_post_abs_yaw,time_to_50pct_sec,time_to_10pct_sec,time_to_5pct_sec,mean_roll_post,mean_pitch_post
+1,0.5,1779766995177739596,103.359386039,21.219855323,0.07240389318820226,0.07213118549257815,0.000136353847812057,0.339766994,0.379879695,0.379879695,2.395220604693759,5.004465038805999

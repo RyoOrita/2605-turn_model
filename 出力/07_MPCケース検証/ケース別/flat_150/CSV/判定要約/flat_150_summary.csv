@@ -1,0 +1,2 @@
+name,target_angle_deg,sim_time,roll_offset_deg,roll_amp_deg,roll_rate_rad_s,pitch_offset_deg,pitch_amp_deg,pitch_rate_rad_s,notes,steps,timed_out,strict_stop_achieved,strict_stop_time_s,practical_stop_achieved,practical_stop_time_s,final_angle_error_deg,final_omega_rad_s,final_u_cmd,max_overshoot_deg,overall_pass,case_output_dir,saved_file_count
+flat_150,150.0,55.0,0.0,0.0,0.1,0.0,0.0,0.07,大角度・平坦,174,False,True,17.3,True,16.2,0.2948,0.001344,0.02,0.0,True,出力/07_MPCケース検証/ケース別/flat_150,8
