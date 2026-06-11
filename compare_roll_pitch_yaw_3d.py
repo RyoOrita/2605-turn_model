@@ -19,11 +19,11 @@ from analyze_turn_trend import (
     group_samples_by_lever,
     load_yaw_aligned_samples,
 )
-from output_paths import COMPARE_ROLL_PITCH_YAW_3D_OUTPUT_DIR, ensure_parent_dir
+from output_paths import COMPARE_ROLL_PITCH_YAW_3D_FIGURE_DIR, ensure_parent_dir
 
 
 DEFAULT_PREFIXES = ("lever_01-05", "lever_05-10")
-DEFAULT_OUTPUT = COMPARE_ROLL_PITCH_YAW_3D_OUTPUT_DIR / "lever_01-05_vs_05-10_roll_pitch_yaw_3d.png"
+DEFAULT_OUTPUT = COMPARE_ROLL_PITCH_YAW_3D_FIGURE_DIR / "lever_01-05_vs_05-10_roll_pitch_yaw_3d.png"
 LEVER_LEVELS = [round(value, 1) for value in np.arange(0.1, 1.01, 0.1)]
 
 

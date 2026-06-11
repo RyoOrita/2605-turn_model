@@ -44,7 +44,10 @@ $$
 
 として使っています。
 
-現状のモデル係数は [outputs/build_generalized_turn_model/turn_model_coefficients.csv](outputs/build_generalized_turn_model/turn_model_coefficients.csv) に出力されます。
+MPC デモの `--roll-deg` / `--pitch-deg` は、車体に固定された傾きとして扱います。
+シミュレーション中は現在の旋回角 `psi` でその車体傾きを上部旋回体座標へ回転し、C++ 側の `euler_x/euler_y` と同じ加速度ベクトル式から `phi/theta` を作ってから、上の重力モーメント式へ入れます。
+
+現状のモデル係数は [出力/05_汎用旋回モデル/CSV/モデル係数/turn_model_coefficients.csv](出力/05_汎用旋回モデル/CSV/モデル係数/turn_model_coefficients.csv) に出力されます。
 
 - `baseline_abs_yaw`: $\omega_0(|u|, \lambda)$
 - `moment_gain_per_nm`: $k(|u|, \lambda)$
@@ -52,6 +55,28 @@ $$
 この係数は、実機ログ由来の [lever_01-05.mcap](lever_01-05.mcap) と [lever_05-10.mcap](lever_05-10.mcap) から生成した学習データに基づいています。現在は空荷 `empty` のみです。
 
 なお、現時点では 0.4 から 1.0 を学習対象のベース領域とし、0.1 から 0.3 は 0.4 の係数から線形補間して滑らかにつないでいます。
+
+### 実際にフィッティングした係数
+
+実データから最小二乗でフィットした係数は、空荷 `empty` について次の通りです。
+
+| レバー絶対値 | baseline_abs_yaw = omega_0 [rad/s] | moment_gain_per_nm = k [rad/s/Nm] | source |
+| --- | ---: | ---: | --- |
+| 0.4 | 0.03942354605250672 | -7.985223523040464e-06 | fitted |
+| 0.5 | 0.06042287111130664 | -8.19346341937846e-06 | fitted |
+| 0.6 | 0.09877176122853194 | -6.9413257682949955e-06 | fitted |
+| 0.7 | 0.16452881686114862 | -4.229310177135325e-06 | fitted |
+| 0.8 | 0.28406221050337704 | -4.364388958651549e-06 | fitted |
+| 0.9 | 0.4193285215897151 | -1.8456287833239893e-06 | fitted |
+| 1.0 | 0.45168397980926456 | -7.318519443458326e-06 | fitted |
+
+参考として、低レバー域 0.1 から 0.3 は実測フィットではなく、0.4 の係数をレバー比で線形スケーリングした補間値です。
+
+| レバー絶対値 | baseline_abs_yaw = omega_0 [rad/s] | moment_gain_per_nm = k [rad/s/Nm] | source |
+| --- | ---: | ---: | --- |
+| 0.1 | 0.00985588651312668 | -1.996305880760116e-06 | interpolated_from_0.4 |
+| 0.2 | 0.01971177302625336 | -3.992611761520232e-06 | interpolated_from_0.4 |
+| 0.3 | 0.029567659539380033 | -5.9889176422803465e-06 | interpolated_from_0.4 |
 
 ## MPC の定式化
 
@@ -151,7 +176,7 @@ python .\extract_target_timeseries.py .\lever_01-05.mcap
 python .\extract_target_timeseries.py .\lever_05-10.mcap
 ```
 
-出力は [outputs/extract_target_timeseries](outputs/extract_target_timeseries) に保存されます。
+出力は [出力/01_時系列抽出](出力/01_時系列抽出) に保存されます。
 
 ### 3. 各データセットの傾向解析を行う
 
@@ -160,7 +185,7 @@ python .\analyze_turn_trend.py lever_01-05
 python .\analyze_turn_trend.py lever_05-10
 ```
 
-出力は [outputs/analyze_turn_trend](outputs/analyze_turn_trend) に保存されます。
+出力は [出力/02_旋回傾向解析](出力/02_旋回傾向解析) に保存されます。
 
 ### 4. 2 つの 3D 図を 1 枚の比較図にまとめる
 
@@ -168,7 +193,7 @@ python .\analyze_turn_trend.py lever_05-10
 python .\compare_roll_pitch_yaw_3d.py
 ```
 
-出力は [outputs/compare_roll_pitch_yaw_3d](outputs/compare_roll_pitch_yaw_3d) に保存されます。
+出力は [出力/03_3D比較](出力/03_3D比較) に保存されます。
 
 ### 5. 必要なら static zero-tilt model を作る
 
@@ -176,7 +201,7 @@ python .\compare_roll_pitch_yaw_3d.py
 python .\build_static_zero_tilt_model.py
 ```
 
-出力は [outputs/build_static_zero_tilt_model](outputs/build_static_zero_tilt_model) に保存されます。
+出力は [出力/04_静的ゼロ傾きモデル](出力/04_静的ゼロ傾きモデル) に保存されます。
 
 ### 6. 汎用旋回モデルを作る
 
@@ -184,7 +209,7 @@ python .\build_static_zero_tilt_model.py
 python .\build_generalized_turn_model.py
 ```
 
-出力は [outputs/build_generalized_turn_model](outputs/build_generalized_turn_model) に保存されます。
+出力は [出力/05_汎用旋回モデル](出力/05_汎用旋回モデル) に保存されます。
 
 ### 7. GUI で簡易 MPC シミュレータを使う
 
@@ -214,7 +239,7 @@ GUI では、
 python .\turn_mpc_static_demo.py --target-angle-deg 60 --roll-deg 3 --roll-amp-deg 0 --pitch-deg 1 --pitch-amp-deg 0 --output-prefix turn_mpc_test_60deg
 ```
 
-`--output-prefix` にファイル名だけを指定した場合、出力は [outputs/turn_mpc_static_demo](outputs/turn_mpc_static_demo) に保存されます。ディレクトリ付きのパスを指定した場合は、そのパスをそのまま使います。
+`--output-prefix` にファイル名だけを指定した場合、出力は [出力/06_MPC静的デモ](出力/06_MPC静的デモ) に保存されます。ディレクトリ付きのパスを指定した場合は、そのパスをそのまま使います。
 
 ## 複数ケース検証
 
@@ -244,12 +269,12 @@ python .\validate_turn_mpc_cases.py
 
 ### ケース別出力
 
-各ケースの出力は [outputs/validate_turn_mpc_cases/turn_mpc_case_runs](outputs/validate_turn_mpc_cases/turn_mpc_case_runs) 配下にケースごとのフォルダで保存されます。
+各ケースの出力は [出力/07_MPCケース検証/ケース別](出力/07_MPCケース検証/ケース別) 配下にケースごとのフォルダで保存されます。
 
 例:
 
-- [outputs/validate_turn_mpc_cases/turn_mpc_case_runs/flat_30](outputs/validate_turn_mpc_cases/turn_mpc_case_runs/flat_30)
-- [outputs/validate_turn_mpc_cases/turn_mpc_case_runs/flat_90](outputs/validate_turn_mpc_cases/turn_mpc_case_runs/flat_90)
+- [出力/07_MPCケース検証/ケース別/flat_30](出力/07_MPCケース検証/ケース別/flat_30)
+- [出力/07_MPCケース検証/ケース別/flat_90](出力/07_MPCケース検証/ケース別/flat_90)
 
 各ケースフォルダには以下が入ります。
 
@@ -263,7 +288,7 @@ python .\validate_turn_mpc_cases.py
 - `*_animation.gif`
 - `*_summary.csv`
 
-ケース横断の要約は [outputs/validate_turn_mpc_cases/turn_mpc_case_validation.csv](outputs/validate_turn_mpc_cases/turn_mpc_case_validation.csv) に保存されます。
+ケース横断の要約は [出力/07_MPCケース検証/CSV/総合検証/turn_mpc_case_validation.csv](出力/07_MPCケース検証/CSV/総合検証/turn_mpc_case_validation.csv) に保存されます。
 
 ### 現時点の検証結果
 
@@ -284,34 +309,31 @@ python .\validate_turn_mpc_cases.py
 
 ## 出力フォルダ
 
-- [outputs/extract_target_timeseries](outputs/extract_target_timeseries)
-- [outputs/analyze_turn_trend](outputs/analyze_turn_trend)
-- [outputs/compare_roll_pitch_yaw_3d](outputs/compare_roll_pitch_yaw_3d)
-- [outputs/build_static_zero_tilt_model](outputs/build_static_zero_tilt_model)
-- [outputs/build_generalized_turn_model](outputs/build_generalized_turn_model)
-- [outputs/turn_mpc_static_demo](outputs/turn_mpc_static_demo)
-- [outputs/validate_turn_mpc_cases](outputs/validate_turn_mpc_cases)
+- [出力/01_時系列抽出](出力/01_時系列抽出): MCAPから抽出したCSV
+- [出力/02_旋回傾向解析](出力/02_旋回傾向解析): レバー一定区間、姿勢影響、減衰解析
+- [出力/03_3D比較](出力/03_3D比較): 複数ログの3D比較画像
+- [出力/04_静的ゼロ傾きモデル](出力/04_静的ゼロ傾きモデル): ゼロ姿勢の静的モデル
+- [出力/05_汎用旋回モデル](出力/05_汎用旋回モデル): 学習データ、係数、検証画像
+- [出力/06_MPC静的デモ](出力/06_MPC静的デモ): 単体MPCシミュレーション結果
+- [出力/07_MPCケース検証](出力/07_MPCケース検証): 複数ケース検証結果
+
+各フォルダの中では、さらに `CSV`、`画像`、`アニメーション`、`ケース別` などに分けています。
 
 ## 主な出力
 
-- [outputs/extract_target_timeseries/lever_01-05_target_timeseries.csv](outputs/extract_target_timeseries/lever_01-05_target_timeseries.csv)
-- [outputs/extract_target_timeseries/lever_01-05_target_timeseries_wide.csv](outputs/extract_target_timeseries/lever_01-05_target_timeseries_wide.csv)
-- [outputs/analyze_turn_trend/lever_01-05_turn_trend_summary.csv](outputs/analyze_turn_trend/lever_01-05_turn_trend_summary.csv)
-- [outputs/analyze_turn_trend/lever_01-05_constant_lever_segments.csv](outputs/analyze_turn_trend/lever_01-05_constant_lever_segments.csv)
-- [outputs/extract_target_timeseries/lever_05-10_target_timeseries.csv](outputs/extract_target_timeseries/lever_05-10_target_timeseries.csv)
-- [outputs/extract_target_timeseries/lever_05-10_target_timeseries_wide.csv](outputs/extract_target_timeseries/lever_05-10_target_timeseries_wide.csv)
-- [outputs/analyze_turn_trend/lever_05-10_turn_trend_summary.csv](outputs/analyze_turn_trend/lever_05-10_turn_trend_summary.csv)
-- [outputs/analyze_turn_trend/lever_05-10_constant_lever_segments.csv](outputs/analyze_turn_trend/lever_05-10_constant_lever_segments.csv)
-- [outputs/compare_roll_pitch_yaw_3d/lever_01-05_vs_05-10_roll_pitch_yaw_3d.png](outputs/compare_roll_pitch_yaw_3d/lever_01-05_vs_05-10_roll_pitch_yaw_3d.png)
-- [outputs/build_static_zero_tilt_model/lever_05-10_static_zero_tilt_model.csv](outputs/build_static_zero_tilt_model/lever_05-10_static_zero_tilt_model.csv)
-- [outputs/build_generalized_turn_model/turn_model_training_samples.csv](outputs/build_generalized_turn_model/turn_model_training_samples.csv)
-- [outputs/build_generalized_turn_model/turn_model_coefficients.csv](outputs/build_generalized_turn_model/turn_model_coefficients.csv)
-- [outputs/build_generalized_turn_model/turn_model_grid.csv](outputs/build_generalized_turn_model/turn_model_grid.csv)
-- [outputs/build_generalized_turn_model/turn_model_overview.png](outputs/build_generalized_turn_model/turn_model_overview.png)
-- [outputs/build_generalized_turn_model/turn_model_validation_summary.csv](outputs/build_generalized_turn_model/turn_model_validation_summary.csv)
-- [outputs/build_generalized_turn_model/turn_model_validation.png](outputs/build_generalized_turn_model/turn_model_validation.png)
-- [outputs/validate_turn_mpc_cases/turn_mpc_case_validation.csv](outputs/validate_turn_mpc_cases/turn_mpc_case_validation.csv)
-- [outputs/validate_turn_mpc_cases/turn_mpc_case_runs](outputs/validate_turn_mpc_cases/turn_mpc_case_runs)
+- [出力/01_時系列抽出/CSV/時系列](出力/01_時系列抽出/CSV/時系列)
+- [出力/02_旋回傾向解析/CSV](出力/02_旋回傾向解析/CSV)
+- [出力/02_旋回傾向解析/画像](出力/02_旋回傾向解析/画像)
+- [出力/03_3D比較/画像/3D比較](出力/03_3D比較/画像/3D比較)
+- [出力/04_静的ゼロ傾きモデル/CSV](出力/04_静的ゼロ傾きモデル/CSV)
+- [出力/04_静的ゼロ傾きモデル/画像](出力/04_静的ゼロ傾きモデル/画像)
+- [出力/05_汎用旋回モデル/CSV](出力/05_汎用旋回モデル/CSV)
+- [出力/05_汎用旋回モデル/画像](出力/05_汎用旋回モデル/画像)
+- [出力/06_MPC静的デモ/CSV](出力/06_MPC静的デモ/CSV)
+- [出力/06_MPC静的デモ/画像](出力/06_MPC静的デモ/画像)
+- [出力/06_MPC静的デモ/アニメーション](出力/06_MPC静的デモ/アニメーション)
+- [出力/07_MPCケース検証/CSV](出力/07_MPCケース検証/CSV)
+- [出力/07_MPCケース検証/ケース別](出力/07_MPCケース検証/ケース別)
 
 ## 出力の見方
 
@@ -334,7 +356,7 @@ python .\validate_turn_mpc_cases.py
 
 ## 追加メモ
 
-- 出力は実行ファイルごとの [outputs](outputs) 配下に分けて保存される
+- 出力は実行ファイルごとの [出力](出力) 配下に分けて保存される
 - 3D 比較図は z 軸を全サブプロットで統一している
 - データが存在しないレバー値は no data と表示される
 - `analyze_turn_trend.py` 単体でも各系列の 3D 図を出力する
@@ -343,3 +365,23 @@ python .\validate_turn_mpc_cases.py
 - `turn_mpc_static_demo.py` は GUI と CLI の両方で実行できる
 - 現在は符号付きレバーと符号付き旋回速度に対応している
 - 逆方向ケースの改善のため、ホライズン内で目標レバーに向かうランプ列を評価している
+
+## 各mcapについて補足
+- 0526-1220-04to10.mcap
+  - レバー量0.4~1.0の540度旋回を実験。
+- 0526-1239-01to04.mcap
+  - レバー量0.1~0.4の180度旋回を実験。傾斜がある場所なので、止まったら次のレバー量にいくようにプログラムされているため、回りきれていないレバー量あり
+- 0526-1248-01to04.mcap
+  - レバー量0.1~0.4の180度旋回を実験。傾斜がある場所なので、止まったら次のレバー量にいくようにプログラムされているため、回りきれていないレバー量あり
+- 0526-1257-04to10.mcap
+  - レバー量0.4~1.0の540度旋回を実験。
+- 0526-1313-04to10.mcap
+  - レバー量0.4~1.0の540度旋回を実験。
+- 0526-1324-01to04.mcap
+  - レバー量0.1~0.4の180度旋回を実験。傾斜がある場所なので、止まったら次のレバー量にいくようにプログラムされているため、回りきれていないレバー量あり- 
+- 0526-1332-01to04.mcap
+  - レバー量0.1~0.4の180度旋回を実験。傾斜がある場所なので、止まったら次のレバー量にいくようにプログラムされているため、回りきれていないレバー量あり
+- 0526-1340-04to10.mcap
+  - レバー量0.4~1.0の540度旋回を実験。
+- 0526-1354-04to10.mcap
+  - レバー量0.4~1.0の540度旋回を実験。

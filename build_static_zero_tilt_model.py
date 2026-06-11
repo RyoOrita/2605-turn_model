@@ -10,13 +10,19 @@ matplotlib.use("Agg")
 
 from matplotlib import pyplot as plt
 
-from output_paths import ANALYZE_TURN_TREND_OUTPUT_DIR, BUILD_STATIC_ZERO_TILT_MODEL_OUTPUT_DIR, ensure_output_dir
+from output_paths import (
+    ANALYZE_TURN_TREND_SEGMENT_CSV_DIR,
+    BUILD_STATIC_ZERO_TILT_MODEL_FIGURE_DIR,
+    BUILD_STATIC_ZERO_TILT_MODEL_MAP_CSV_DIR,
+    BUILD_STATIC_ZERO_TILT_MODEL_MODEL_CSV_DIR,
+    ensure_parent_dir,
+)
 
 
-SEGMENT_SUMMARY_CSV = ANALYZE_TURN_TREND_OUTPUT_DIR / "lever_05-10_constant_lever_segments.csv"
-STATIC_MAP_CSV = BUILD_STATIC_ZERO_TILT_MODEL_OUTPUT_DIR / "lever_05-10_static_zero_tilt_map.csv"
-STATIC_MODEL_CSV = BUILD_STATIC_ZERO_TILT_MODEL_OUTPUT_DIR / "lever_05-10_static_zero_tilt_model.csv"
-STATIC_MODEL_FIGURE = BUILD_STATIC_ZERO_TILT_MODEL_OUTPUT_DIR / "lever_05-10_static_zero_tilt_model.png"
+SEGMENT_SUMMARY_CSV = ANALYZE_TURN_TREND_SEGMENT_CSV_DIR / "lever_05-10_constant_lever_segments.csv"
+STATIC_MAP_CSV = BUILD_STATIC_ZERO_TILT_MODEL_MAP_CSV_DIR / "lever_05-10_static_zero_tilt_map.csv"
+STATIC_MODEL_CSV = BUILD_STATIC_ZERO_TILT_MODEL_MODEL_CSV_DIR / "lever_05-10_static_zero_tilt_model.csv"
+STATIC_MODEL_FIGURE = BUILD_STATIC_ZERO_TILT_MODEL_FIGURE_DIR / "lever_05-10_static_zero_tilt_model.png"
 
 STATIC_THRESHOLD = 0.6
 
@@ -103,7 +109,8 @@ def plot_static_model(points: np.ndarray, grid: np.ndarray, piecewise_pred: np.n
 
 
 def main() -> None:
-    ensure_output_dir(BUILD_STATIC_ZERO_TILT_MODEL_OUTPUT_DIR)
+    for output_path in (STATIC_MAP_CSV, STATIC_MODEL_CSV, STATIC_MODEL_FIGURE):
+        ensure_parent_dir(output_path)
     points = load_zero_tilt_points()
     write_static_map(points)
     grid, piecewise_pred = write_static_model(points)

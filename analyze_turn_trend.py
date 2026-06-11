@@ -11,7 +11,18 @@ matplotlib.use("Agg")
 
 from matplotlib import pyplot as plt
 
-from output_paths import ANALYZE_TURN_TREND_OUTPUT_DIR, EXTRACT_TARGET_TIMESERIES_OUTPUT_DIR, ensure_output_dir
+from output_paths import (
+    ANALYZE_TURN_TREND_ALIGNED_CSV_DIR,
+    ANALYZE_TURN_TREND_DECAY_CSV_DIR,
+    ANALYZE_TURN_TREND_DECAY_FIGURE_DIR,
+    ANALYZE_TURN_TREND_RELATIONSHIP_FIGURE_DIR,
+    ANALYZE_TURN_TREND_SEGMENT_CSV_DIR,
+    ANALYZE_TURN_TREND_SUMMARY_CSV_DIR,
+    ANALYZE_TURN_TREND_SUMMARY_FIGURE_DIR,
+    ANALYZE_TURN_TREND_SURFACE_FIGURE_DIR,
+    EXTRACT_TARGET_TIMESERIES_CSV_DIR,
+    ensure_parent_dir,
+)
 
 
 MIN_SEGMENT_SAMPLES = 30
@@ -29,16 +40,16 @@ def parse_args() -> argparse.Namespace:
 
 def build_paths(prefix: str) -> dict[str, Path]:
     return {
-        "input_csv": EXTRACT_TARGET_TIMESERIES_OUTPUT_DIR / f"{prefix}_target_timeseries_wide.csv",
-        "aligned_csv": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_yaw_aligned_samples.csv",
-        "summary_csv": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_turn_trend_summary.csv",
-        "segment_summary_csv": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_constant_lever_segments.csv",
-        "relationship_figure": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_constant_lever_relationships.png",
-        "summary_figure": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_constant_lever_summary.png",
-        "surface_figure": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_roll_pitch_yaw_3d.png",
-        "decay_summary_csv": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_zero_drop_decay_summary.csv",
-        "decay_curves_figure": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_zero_drop_decay_curves.png",
-        "decay_metrics_figure": ANALYZE_TURN_TREND_OUTPUT_DIR / f"{prefix}_zero_drop_decay_metrics.png",
+        "input_csv": EXTRACT_TARGET_TIMESERIES_CSV_DIR / f"{prefix}_target_timeseries_wide.csv",
+        "aligned_csv": ANALYZE_TURN_TREND_ALIGNED_CSV_DIR / f"{prefix}_yaw_aligned_samples.csv",
+        "summary_csv": ANALYZE_TURN_TREND_SUMMARY_CSV_DIR / f"{prefix}_turn_trend_summary.csv",
+        "segment_summary_csv": ANALYZE_TURN_TREND_SEGMENT_CSV_DIR / f"{prefix}_constant_lever_segments.csv",
+        "relationship_figure": ANALYZE_TURN_TREND_RELATIONSHIP_FIGURE_DIR / f"{prefix}_constant_lever_relationships.png",
+        "summary_figure": ANALYZE_TURN_TREND_SUMMARY_FIGURE_DIR / f"{prefix}_constant_lever_summary.png",
+        "surface_figure": ANALYZE_TURN_TREND_SURFACE_FIGURE_DIR / f"{prefix}_roll_pitch_yaw_3d.png",
+        "decay_summary_csv": ANALYZE_TURN_TREND_DECAY_CSV_DIR / f"{prefix}_zero_drop_decay_summary.csv",
+        "decay_curves_figure": ANALYZE_TURN_TREND_DECAY_FIGURE_DIR / f"{prefix}_zero_drop_decay_curves.png",
+        "decay_metrics_figure": ANALYZE_TURN_TREND_DECAY_FIGURE_DIR / f"{prefix}_zero_drop_decay_metrics.png",
     }
 
 
@@ -575,8 +586,10 @@ def plot_decay_metrics(output_path: Path, rows: list[dict[str, float | int]]) ->
 
 def main() -> None:
     args = parse_args()
-    ensure_output_dir(ANALYZE_TURN_TREND_OUTPUT_DIR)
     paths = build_paths(args.prefix)
+    for key, path in paths.items():
+        if key != "input_csv":
+            ensure_parent_dir(path)
 
     timestamps, samples = load_yaw_aligned_samples(paths["input_csv"])
     write_aligned_csv(paths["aligned_csv"], timestamps, samples)

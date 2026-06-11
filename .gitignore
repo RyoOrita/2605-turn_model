@@ -1,4 +1,5 @@
 .venv/
+.venv-linux/
 __pycache__/
 *.py[cod]
 
@@ -8,4 +9,5 @@ __pycache__/
 
 # Generated analysis and simulation outputs
 outputs/
-*** End Patch
+出力/
+pid_mpc_porting_reference/output/

@@ -5,12 +5,12 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from output_paths import VALIDATE_TURN_MPC_CASES_OUTPUT_DIR
+from output_paths import VALIDATE_TURN_MPC_CASES_CASES_DIR, VALIDATE_TURN_MPC_CASES_SUMMARY_CSV_DIR, ensure_parent_dir
 from turn_mpc_static_demo import ScenarioParams, run_simulation, save_simulation_outputs
 
 
-OUTPUT_CSV = VALIDATE_TURN_MPC_CASES_OUTPUT_DIR / "turn_mpc_case_validation.csv"
-OUTPUT_ROOT_DIR = VALIDATE_TURN_MPC_CASES_OUTPUT_DIR / "turn_mpc_case_runs"
+OUTPUT_CSV = VALIDATE_TURN_MPC_CASES_SUMMARY_CSV_DIR / "turn_mpc_case_validation.csv"
+OUTPUT_ROOT_DIR = VALIDATE_TURN_MPC_CASES_CASES_DIR
 
 STRICT_STOP_ERROR_DEG = 0.3
 STRICT_STOP_OMEGA_RAD_S = 0.005
@@ -98,7 +98,7 @@ def find_first_stop_time(
 
 
 def write_case_summary(case_dir: Path, summary_row: dict[str, object]) -> Path:
-    summary_path = case_dir / f"{case_dir.name}_summary.csv"
+    summary_path = ensure_parent_dir(case_dir / "CSV" / "判定要約" / f"{case_dir.name}_summary.csv")
     with summary_path.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(summary_row.keys()))
         writer.writeheader()
@@ -158,7 +158,7 @@ def evaluate_case(test_case: TestCase, output_root_dir: Path) -> dict[str, objec
 def write_results(rows: list[dict[str, object]]) -> None:
     if not rows:
         return
-    with OUTPUT_CSV.open("w", encoding="utf-8", newline="") as stream:
+    with ensure_parent_dir(OUTPUT_CSV).open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         writer.writerows(rows)

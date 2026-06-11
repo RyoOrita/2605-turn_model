@@ -7,7 +7,7 @@ from pathlib import Path
 from mcap.reader import make_reader
 from rosbags.typesys import Stores, get_typestore
 
-from output_paths import EXTRACT_TARGET_TIMESERIES_OUTPUT_DIR, ensure_output_dir
+from output_paths import EXTRACT_TARGET_TIMESERIES_CSV_DIR, ensure_output_dir
 
 
 TOPICS = {
@@ -21,8 +21,8 @@ TOPICS = {
 def build_output_paths(input_mcap: Path) -> tuple[Path, Path]:
     stem = input_mcap.stem
     return (
-        EXTRACT_TARGET_TIMESERIES_OUTPUT_DIR / f"{stem}_target_timeseries.csv",
-        EXTRACT_TARGET_TIMESERIES_OUTPUT_DIR / f"{stem}_target_timeseries_wide.csv",
+        EXTRACT_TARGET_TIMESERIES_CSV_DIR / f"{stem}_target_timeseries.csv",
+        EXTRACT_TARGET_TIMESERIES_CSV_DIR / f"{stem}_target_timeseries_wide.csv",
     )
 
 
@@ -51,7 +51,7 @@ def extract_value(topic: str, message: object) -> float | None:
 def main() -> None:
     args = parse_args()
     input_mcap = Path(args.input_mcap)
-    ensure_output_dir(EXTRACT_TARGET_TIMESERIES_OUTPUT_DIR)
+    ensure_output_dir(EXTRACT_TARGET_TIMESERIES_CSV_DIR)
     output_csv, output_wide_csv = build_output_paths(input_mcap)
     typestore = get_typestore(Stores.ROS2_HUMBLE)
 

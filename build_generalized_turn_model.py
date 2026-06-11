@@ -12,19 +12,29 @@ matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 
 from analyze_turn_trend import PLOT_MIN_LEVER, build_paths, load_yaw_aligned_samples
-from output_paths import BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR, TURN_MODEL_COEFFICIENTS_CSV, ensure_output_dir
+from output_paths import (
+    BUILD_GENERALIZED_TURN_MODEL_GRID_CSV_DIR,
+    BUILD_GENERALIZED_TURN_MODEL_MOMENT_FIGURE_DIR,
+    BUILD_GENERALIZED_TURN_MODEL_OVERVIEW_FIGURE_DIR,
+    BUILD_GENERALIZED_TURN_MODEL_PREDICTIONS_CSV_DIR,
+    BUILD_GENERALIZED_TURN_MODEL_TRAINING_CSV_DIR,
+    BUILD_GENERALIZED_TURN_MODEL_VALIDATION_CSV_DIR,
+    BUILD_GENERALIZED_TURN_MODEL_VALIDATION_FIGURE_DIR,
+    TURN_MODEL_COEFFICIENTS_CSV,
+    ensure_parent_dir,
+)
 
 
 DATASET_CONFIG_CSV = Path("turn_model_datasets.csv")
-TRAINING_SAMPLES_CSV = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_training_samples.csv"
+TRAINING_SAMPLES_CSV = BUILD_GENERALIZED_TURN_MODEL_TRAINING_CSV_DIR / "turn_model_training_samples.csv"
 MODEL_COEFFICIENTS_CSV = TURN_MODEL_COEFFICIENTS_CSV
-MODEL_GRID_CSV = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_grid.csv"
-MODEL_FIGURE = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_overview.png"
-MODEL_PREDICTIONS_CSV = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_predictions.csv"
-MODEL_VALIDATION_CSV = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_validation_summary.csv"
-MODEL_VALIDATION_FIGURE = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_validation.png"
-MOMENT_ABS_YAW_FIGURE = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_moment_vs_abs_yaw.png"
-MOMENT_ABS_YAW_BY_LEVER_FIGURE = BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR / "turn_model_moment_vs_abs_yaw_by_lever.png"
+MODEL_GRID_CSV = BUILD_GENERALIZED_TURN_MODEL_GRID_CSV_DIR / "turn_model_grid.csv"
+MODEL_FIGURE = BUILD_GENERALIZED_TURN_MODEL_OVERVIEW_FIGURE_DIR / "turn_model_overview.png"
+MODEL_PREDICTIONS_CSV = BUILD_GENERALIZED_TURN_MODEL_PREDICTIONS_CSV_DIR / "turn_model_predictions.csv"
+MODEL_VALIDATION_CSV = BUILD_GENERALIZED_TURN_MODEL_VALIDATION_CSV_DIR / "turn_model_validation_summary.csv"
+MODEL_VALIDATION_FIGURE = BUILD_GENERALIZED_TURN_MODEL_VALIDATION_FIGURE_DIR / "turn_model_validation.png"
+MOMENT_ABS_YAW_FIGURE = BUILD_GENERALIZED_TURN_MODEL_MOMENT_FIGURE_DIR / "turn_model_moment_vs_abs_yaw.png"
+MOMENT_ABS_YAW_BY_LEVER_FIGURE = BUILD_GENERALIZED_TURN_MODEL_MOMENT_FIGURE_DIR / "turn_model_moment_vs_abs_yaw_by_lever.png"
 GRAVITY = 9.80665
 MODEL_BASE_MIN_LEVER = 0.4
 LOW_LEVER_LEVELS = (0.1, 0.2, 0.3)
@@ -483,7 +493,18 @@ def plot_moment_vs_abs_yaw_by_lever(training_rows: list[dict[str, object]]) -> N
 
 def main() -> None:
     args = parse_args()
-    ensure_output_dir(BUILD_GENERALIZED_TURN_MODEL_OUTPUT_DIR)
+    for output_path in (
+        TRAINING_SAMPLES_CSV,
+        MODEL_COEFFICIENTS_CSV,
+        MODEL_GRID_CSV,
+        MODEL_FIGURE,
+        MODEL_PREDICTIONS_CSV,
+        MODEL_VALIDATION_CSV,
+        MODEL_VALIDATION_FIGURE,
+        MOMENT_ABS_YAW_FIGURE,
+        MOMENT_ABS_YAW_BY_LEVER_FIGURE,
+    ):
+        ensure_parent_dir(output_path)
     config_rows = load_dataset_config(Path(args.config))
     training_rows = build_training_rows(config_rows)
     write_training_samples(training_rows)

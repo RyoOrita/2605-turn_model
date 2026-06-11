@@ -57,6 +57,16 @@ from output_paths import (
 )
 
 
+RESULT_CSV_SUBDIR = Path("CSV") / "時系列"
+ANGLE_FIGURE_SUBDIR = Path("画像") / "角度"
+OMEGA_FIGURE_SUBDIR = Path("画像") / "角速度"
+INPUT_FIGURE_SUBDIR = Path("画像") / "レバー入力"
+MOMENT_FIGURE_SUBDIR = Path("画像") / "モーメント"
+HORIZON_FIGURE_SUBDIR = Path("画像") / "予測ホライズン"
+STORYBOARD_FIGURE_SUBDIR = Path("画像") / "絵コンテ"
+ANIMATION_SUBDIR = Path("アニメーション")
+
+
 @dataclass
 class MachineParams:
     # empty の例。積荷対応時は load_state ごとに別管理する。
@@ -145,17 +155,21 @@ def resolve_scenario_output_prefix(scenario: ScenarioParams) -> Path:
     return Path(resolve_prefixed_output(scenario.output_prefix, TURN_MPC_STATIC_DEMO_OUTPUT_DIR))
 
 
-def create_file_list(scenario: ScenarioParams) -> list[str]:
+def build_scenario_output_path(scenario: ScenarioParams, suffix: str, output_subdir: Path) -> Path:
     output_prefix = resolve_scenario_output_prefix(scenario)
+    return ensure_parent_dir(output_prefix.parent / output_subdir / f"{output_prefix.name}_{suffix}")
+
+
+def create_file_list(scenario: ScenarioParams) -> list[str]:
     return [
-        f"{output_prefix}_result.csv",
-        f"{output_prefix}_angle.png",
-        f"{output_prefix}_omega.png",
-        f"{output_prefix}_input.png",
-        f"{output_prefix}_moment.png",
-        f"{output_prefix}_horizon.png",
-        f"{output_prefix}_storyboard.png",
-        f"{output_prefix}_animation.gif",
+        str(build_scenario_output_path(scenario, "result.csv", RESULT_CSV_SUBDIR)),
+        str(build_scenario_output_path(scenario, "angle.png", ANGLE_FIGURE_SUBDIR)),
+        str(build_scenario_output_path(scenario, "omega.png", OMEGA_FIGURE_SUBDIR)),
+        str(build_scenario_output_path(scenario, "input.png", INPUT_FIGURE_SUBDIR)),
+        str(build_scenario_output_path(scenario, "moment.png", MOMENT_FIGURE_SUBDIR)),
+        str(build_scenario_output_path(scenario, "horizon.png", HORIZON_FIGURE_SUBDIR)),
+        str(build_scenario_output_path(scenario, "storyboard.png", STORYBOARD_FIGURE_SUBDIR)),
+        str(build_scenario_output_path(scenario, "animation.gif", ANIMATION_SUBDIR)),
     ]
 
 
@@ -163,9 +177,8 @@ def save_simulation_outputs(rows: list[dict[str, float | bool]], scenario: Scena
     if not rows:
         return []
 
-    output_prefix = resolve_scenario_output_prefix(scenario)
     fieldnames = list(rows[0].keys()) if rows else []
-    result_csv = ensure_parent_dir(Path(f"{output_prefix}_result.csv"))
+    result_csv = build_scenario_output_path(scenario, "result.csv", RESULT_CSV_SUBDIR)
     with result_csv.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fieldnames)
         writer.writeheader()
@@ -187,7 +200,7 @@ def save_simulation_outputs(rows: list[dict[str, float | bool]], scenario: Scena
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(Path(f"{output_prefix}_angle.png"), dpi=150)
+    plt.savefig(build_scenario_output_path(scenario, "angle.png", ANGLE_FIGURE_SUBDIR), dpi=150)
     plt.close()
 
     plt.figure(figsize=(10, 5))
@@ -197,7 +210,7 @@ def save_simulation_outputs(rows: list[dict[str, float | bool]], scenario: Scena
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(Path(f"{output_prefix}_omega.png"), dpi=150)
+    plt.savefig(build_scenario_output_path(scenario, "omega.png", OMEGA_FIGURE_SUBDIR), dpi=150)
     plt.close()
 
     plt.figure(figsize=(10, 5))
@@ -207,7 +220,7 @@ def save_simulation_outputs(rows: list[dict[str, float | bool]], scenario: Scena
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(Path(f"{output_prefix}_input.png"), dpi=150)
+    plt.savefig(build_scenario_output_path(scenario, "input.png", INPUT_FIGURE_SUBDIR), dpi=150)
     plt.close()
 
     plt.figure(figsize=(10, 5))
@@ -217,7 +230,7 @@ def save_simulation_outputs(rows: list[dict[str, float | bool]], scenario: Scena
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(Path(f"{output_prefix}_moment.png"), dpi=150)
+    plt.savefig(build_scenario_output_path(scenario, "moment.png", MOMENT_FIGURE_SUBDIR), dpi=150)
     plt.close()
 
     plt.figure(figsize=(10, 5))
@@ -227,7 +240,7 @@ def save_simulation_outputs(rows: list[dict[str, float | bool]], scenario: Scena
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(Path(f"{output_prefix}_horizon.png"), dpi=150)
+    plt.savefig(build_scenario_output_path(scenario, "horizon.png", HORIZON_FIGURE_SUBDIR), dpi=150)
     plt.close()
 
     save_turn_storyboard(rows, scenario)
@@ -313,8 +326,7 @@ def draw_machine_top_view(axis: plt.Axes, yaw_rad: float, target_yaw_rad: float,
 
 
 def save_turn_storyboard(rows: list[dict[str, float | bool]], scenario: ScenarioParams) -> Path:
-    output_prefix = resolve_scenario_output_prefix(scenario)
-    storyboard_path = ensure_parent_dir(Path(f"{output_prefix}_storyboard.png"))
+    storyboard_path = build_scenario_output_path(scenario, "storyboard.png", STORYBOARD_FIGURE_SUBDIR)
     if not rows:
         return storyboard_path
 
@@ -346,8 +358,7 @@ def save_turn_storyboard(rows: list[dict[str, float | bool]], scenario: Scenario
 
 
 def save_turn_animation(rows: list[dict[str, float | bool]], scenario: ScenarioParams) -> Path:
-    output_prefix = resolve_scenario_output_prefix(scenario)
-    animation_path = ensure_parent_dir(Path(f"{output_prefix}_animation.gif"))
+    animation_path = build_scenario_output_path(scenario, "animation.gif", ANIMATION_SUBDIR)
     if not rows:
         return animation_path
 
@@ -662,7 +673,7 @@ class TurnModel:
                 key=lambda row: row["lever"],
             )
 
-        # デモ用係数。実評価では outputs/build_generalized_turn_model/turn_model_coefficients.csv を使う。
+        # デモ用係数。実評価では出力/05_汎用旋回モデル/CSV/モデル係数/turn_model_coefficients.csvを使う。
         lever = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         baseline = [0.0, 0.015, 0.030, 0.045, 0.065, 0.090, 0.130, 0.180, 0.270, 0.420, 0.480]
         gain = [0.0, 1.0e-6, 1.4e-6, 1.8e-6, 2.0e-6, 2.2e-6, 2.4e-6, 1.8e-6, 1.2e-6, 0.5e-6, 0.3e-6]
@@ -852,10 +863,52 @@ def solve_static_mpc(
     return best_u, horizon, weights, True
 
 
-def attitude_profile(t: float, scenario: ScenarioParams) -> tuple[float, float]:
-    roll = math.radians(scenario.roll_offset_deg) + math.radians(scenario.roll_amp_deg) * math.sin(scenario.roll_rate_rad_s * t)
-    pitch = math.radians(scenario.pitch_offset_deg) + math.radians(scenario.pitch_amp_deg) * math.cos(scenario.pitch_rate_rad_s * t)
-    return roll, pitch
+def body_attitude_profile(time_sec: float, scenario: ScenarioParams) -> tuple[float, float]:
+    body_roll = math.radians(scenario.roll_offset_deg) + math.radians(scenario.roll_amp_deg) * math.sin(
+        scenario.roll_rate_rad_s * time_sec
+    )
+    body_pitch = math.radians(scenario.pitch_offset_deg) + math.radians(scenario.pitch_amp_deg) * math.cos(
+        scenario.pitch_rate_rad_s * time_sec
+    )
+    return body_roll, body_pitch
+
+
+def acceleration_from_body_euler(body_roll_rad: float, body_pitch_rad: float) -> tuple[float, float, float]:
+    cos_body_roll = math.cos(body_roll_rad)
+    acceleration_x = math.sin(body_roll_rad)
+    acceleration_y = -cos_body_roll * math.sin(body_pitch_rad)
+    acceleration_z = -cos_body_roll * math.cos(body_pitch_rad)
+    return acceleration_x, acceleration_y, acceleration_z
+
+
+def rotate_acceleration_to_upper_body(
+    acceleration_x: float,
+    acceleration_y: float,
+    acceleration_z: float,
+    yaw_rad: float,
+) -> tuple[float, float, float]:
+    cos_yaw = math.cos(yaw_rad)
+    sin_yaw = math.sin(yaw_rad)
+    upper_acceleration_x = cos_yaw * acceleration_x + sin_yaw * acceleration_y
+    upper_acceleration_y = -sin_yaw * acceleration_x + cos_yaw * acceleration_y
+    return upper_acceleration_x, upper_acceleration_y, acceleration_z
+
+
+def roll_pitch_from_acceleration(
+    acceleration_x: float,
+    acceleration_y: float,
+    acceleration_z: float,
+) -> tuple[float, float]:
+    euler_x_rad = math.atan2(-acceleration_y, -acceleration_z)
+    euler_y_rad = math.atan2(acceleration_x, math.sqrt(acceleration_y * acceleration_y + acceleration_z * acceleration_z))
+    return euler_y_rad, euler_x_rad
+
+
+def attitude_profile(time_sec: float, yaw_rad: float, scenario: ScenarioParams) -> tuple[float, float]:
+    body_roll, body_pitch = body_attitude_profile(time_sec, scenario)
+    body_acceleration = acceleration_from_body_euler(body_roll, body_pitch)
+    upper_body_acceleration = rotate_acceleration_to_upper_body(*body_acceleration, yaw_rad)
+    return roll_pitch_from_acceleration(*upper_body_acceleration)
 
 
 def run_simulation(scenario: ScenarioParams, save_outputs: bool = True) -> list[dict[str, float | bool]]:
@@ -877,9 +930,9 @@ def run_simulation(scenario: ScenarioParams, save_outputs: bool = True) -> list[
     rows = []
 
     for k in range(n_steps):
-        t = k * dt
+        time_sec = k * dt
 
-        roll, pitch = attitude_profile(t, scenario)
+        roll, pitch = attitude_profile(time_sec, psi, scenario)
         moment_nm = gravity_yaw_moment(machine, roll, pitch)
 
         u_cmd, horizon, weights, ok = solve_static_mpc(
@@ -896,7 +949,7 @@ def run_simulation(scenario: ScenarioParams, save_outputs: bool = True) -> list[
 
         rows.append(
             {
-                "time": t,
+                "time": time_sec,
                 "psi_deg": math.degrees(psi),
                 "target_psi_deg": math.degrees(target_psi),
                 "angle_error_deg": math.degrees(target_psi - psi),

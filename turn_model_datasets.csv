@@ -1,3 +1,12 @@
 prefix,load_state,mass_kg,x_cg_mm,y_cg_mm,z_cg_mm,enabled,notes
 lever_01-05,empty,7785,-587,30,1726,1,current empty-load log
 lever_05-10,empty,7785,-587,30,1726,1,current empty-load log
+0526-1220-04to10,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.4 to 1.0
+0526-1239-01to04,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.1 to 0.4
+0526-1248-01to04,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.1 to 0.4
+0526-1257-04to10,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.4 to 1.0
+0526-1313-04to10,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.4 to 1.0
+0526-1324-01to04,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.1 to 0.4
+0526-1332-01to04,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.1 to 0.4
+0526-1340-04to10,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.4 to 1.0
+0526-1354-04to10,empty,7785,-587,30,1726,1,additional 2026-05-26 log 0.4 to 1.0
